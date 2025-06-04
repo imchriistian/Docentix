@@ -11,98 +11,159 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
-import { Route as MenuImport } from './routes/menu'
-import { Route as IndexImport } from './routes/index'
+import { Route as AuthenticatedRouteImport } from './routes/_authenticated/route'
+import { Route as authRouteImport } from './routes/(auth)/route'
 import { Route as AuthenticatedHomeImport } from './routes/_authenticated/home'
+import { Route as authSignUpImport } from './routes/(auth)/sign-up'
+import { Route as authSignInImport } from './routes/(auth)/sign-in'
 
 // Create/Update Routes
 
-const MenuRoute = MenuImport.update({
-  id: '/menu',
-  path: '/menu',
+const AuthenticatedRouteRoute = AuthenticatedRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRoute,
 } as any)
 
-const IndexRoute = IndexImport.update({
-  id: '/',
-  path: '/',
+const authRouteRoute = authRouteImport.update({
+  id: '/(auth)',
   getParentRoute: () => rootRoute,
 } as any)
 
 const AuthenticatedHomeRoute = AuthenticatedHomeImport.update({
-  id: '/_authenticated/home',
+  id: '/home',
   path: '/home',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+
+const authSignUpRoute = authSignUpImport.update({
+  id: '/sign-up',
+  path: '/sign-up',
+  getParentRoute: () => authRouteRoute,
+} as any)
+
+const authSignInRoute = authSignInImport.update({
+  id: '/sign-in',
+  path: '/sign-in',
+  getParentRoute: () => authRouteRoute,
 } as any)
 
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
+    '/(auth)': {
+      id: '/(auth)'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexImport
+      preLoaderRoute: typeof authRouteImport
       parentRoute: typeof rootRoute
     }
-    '/menu': {
-      id: '/menu'
-      path: '/menu'
-      fullPath: '/menu'
-      preLoaderRoute: typeof MenuImport
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof AuthenticatedRouteImport
       parentRoute: typeof rootRoute
+    }
+    '/(auth)/sign-in': {
+      id: '/(auth)/sign-in'
+      path: '/sign-in'
+      fullPath: '/sign-in'
+      preLoaderRoute: typeof authSignInImport
+      parentRoute: typeof authRouteImport
+    }
+    '/(auth)/sign-up': {
+      id: '/(auth)/sign-up'
+      path: '/sign-up'
+      fullPath: '/sign-up'
+      preLoaderRoute: typeof authSignUpImport
+      parentRoute: typeof authRouteImport
     }
     '/_authenticated/home': {
       id: '/_authenticated/home'
       path: '/home'
       fullPath: '/home'
       preLoaderRoute: typeof AuthenticatedHomeImport
-      parentRoute: typeof rootRoute
+      parentRoute: typeof AuthenticatedRouteImport
     }
   }
 }
 
 // Create and export the route tree
 
+interface authRouteRouteChildren {
+  authSignInRoute: typeof authSignInRoute
+  authSignUpRoute: typeof authSignUpRoute
+}
+
+const authRouteRouteChildren: authRouteRouteChildren = {
+  authSignInRoute: authSignInRoute,
+  authSignUpRoute: authSignUpRoute,
+}
+
+const authRouteRouteWithChildren = authRouteRoute._addFileChildren(
+  authRouteRouteChildren,
+)
+
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedHomeRoute: typeof AuthenticatedHomeRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedHomeRoute: AuthenticatedHomeRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/menu': typeof MenuRoute
+  '/': typeof authRouteRouteWithChildren
+  '': typeof AuthenticatedRouteRouteWithChildren
+  '/sign-in': typeof authSignInRoute
+  '/sign-up': typeof authSignUpRoute
   '/home': typeof AuthenticatedHomeRoute
 }
 
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/menu': typeof MenuRoute
+  '/': typeof authRouteRouteWithChildren
+  '': typeof AuthenticatedRouteRouteWithChildren
+  '/sign-in': typeof authSignInRoute
+  '/sign-up': typeof authSignUpRoute
   '/home': typeof AuthenticatedHomeRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
-  '/': typeof IndexRoute
-  '/menu': typeof MenuRoute
+  '/(auth)': typeof authRouteRouteWithChildren
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/(auth)/sign-in': typeof authSignInRoute
+  '/(auth)/sign-up': typeof authSignUpRoute
   '/_authenticated/home': typeof AuthenticatedHomeRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/menu' | '/home'
+  fullPaths: '/' | '' | '/sign-in' | '/sign-up' | '/home'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/menu' | '/home'
-  id: '__root__' | '/' | '/menu' | '/_authenticated/home'
+  to: '/' | '' | '/sign-in' | '/sign-up' | '/home'
+  id:
+    | '__root__'
+    | '/(auth)'
+    | '/_authenticated'
+    | '/(auth)/sign-in'
+    | '/(auth)/sign-up'
+    | '/_authenticated/home'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  MenuRoute: typeof MenuRoute
-  AuthenticatedHomeRoute: typeof AuthenticatedHomeRoute
+  authRouteRoute: typeof authRouteRouteWithChildren
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
 }
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  MenuRoute: MenuRoute,
-  AuthenticatedHomeRoute: AuthenticatedHomeRoute,
+  authRouteRoute: authRouteRouteWithChildren,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
 }
 
 export const routeTree = rootRoute
@@ -115,19 +176,34 @@ export const routeTree = rootRoute
     "__root__": {
       "filePath": "__root.tsx",
       "children": [
-        "/",
-        "/menu",
+        "/(auth)",
+        "/_authenticated"
+      ]
+    },
+    "/(auth)": {
+      "filePath": "(auth)/route.tsx",
+      "children": [
+        "/(auth)/sign-in",
+        "/(auth)/sign-up"
+      ]
+    },
+    "/_authenticated": {
+      "filePath": "_authenticated/route.tsx",
+      "children": [
         "/_authenticated/home"
       ]
     },
-    "/": {
-      "filePath": "index.tsx"
+    "/(auth)/sign-in": {
+      "filePath": "(auth)/sign-in.tsx",
+      "parent": "/(auth)"
     },
-    "/menu": {
-      "filePath": "menu.tsx"
+    "/(auth)/sign-up": {
+      "filePath": "(auth)/sign-up.tsx",
+      "parent": "/(auth)"
     },
     "/_authenticated/home": {
-      "filePath": "_authenticated/home.tsx"
+      "filePath": "_authenticated/home.tsx",
+      "parent": "/_authenticated"
     }
   }
 }
