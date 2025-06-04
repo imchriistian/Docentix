@@ -1,11 +1,13 @@
 import logo from "@/assets/docentix.png";
-
-export function Logo() {
+interface Props {
+    className?: string;
+}
+export function Logo({ className }: Props) {
     return (
         <img
             src={logo}
             alt="Logo"
-            className="w-16 h-16 object-contain"
+            className={`${className || ''}`}
         />
     );
 }
